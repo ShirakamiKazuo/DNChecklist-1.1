@@ -335,20 +335,9 @@ h1 {
   opacity: 0.65;
 }
 .char-row.reorder-mode { cursor: default; }
-.char-row.reorder-mode:hover { border-color: var(--border); background: rgba(255,255,255,0.02); }
+.char-row.reorder-mode:hover { border-color: var(--border-focus); background: rgba(74,111,165,0.04); }
 
-.item-drag-handle {
-  cursor: grab;
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  line-height: 1;
-  letter-spacing: -1px;
-  flex-shrink: 0;
-  padding: 2px;
-  display: none;
-}
-.item-drag-handle:active { cursor: grabbing; }
-.reorder-mode .item-drag-handle { display: block; }
+.btn-item-action:disabled { opacity: 0.25; cursor: default; }
 
 .char-check {
   width: 16px; height: 16px;
@@ -537,8 +526,6 @@ h1 {
 
 .section-card.dragging { opacity: 0.4; transform: scale(0.97); }
 .section-card.drag-over { border-color: var(--border-focus); box-shadow: 0 0 0 2px rgba(74,111,165,0.2); }
-.char-row.item-dragging { opacity: 0.4; }
-.char-row.item-drag-over { border-color: var(--border-focus); background: rgba(74,111,165,0.08); }
 
 .modal-overlay {
   display: none;

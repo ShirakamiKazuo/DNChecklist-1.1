@@ -244,11 +244,19 @@ function renderSection(sec, si) {
 }
 
 function renderChar(sec, si, ch, ci, isReordering) {
+  const total = sec.chars.length;
+  if (isReordering) {
+    return `
+    <div class="char-row reorder-mode">
+      <span class="char-name">${esc(ch.name)}</span>
+      <div class="char-actions">
+        <button class="btn-item-action" onclick="moveItem(${si},${ci},-1)" ${ci === 0 ? 'disabled' : ''} title="Move up">▲</button>
+        <button class="btn-item-action" onclick="moveItem(${si},${ci},1)" ${ci === total - 1 ? 'disabled' : ''} title="Move down">▼</button>
+      </div>
+    </div>`;
+  }
   return `
-  <div class="char-row ${ch.done ? 'done' : ''} ${isReordering ? 'reorder-mode' : ''}"
-       ${isReordering ? `draggable="true" data-item-id="${ch.id}"` : `onclick="toggleChar(${si},${ci})"`}
-       id="item-${sec.id}-${ch.id}">
-    <span class="item-drag-handle" onmousedown="event.stopPropagation()">⠿⠿</span>
+  <div class="char-row ${ch.done ? 'done' : ''}" onclick="toggleChar(${si},${ci})">
     <div class="char-check"><span class="char-check-icon">✓</span></div>
     <span class="char-name">${esc(ch.name)}</span>
     <div class="char-actions">
@@ -281,7 +289,14 @@ function toggleReorder(si) {
   else reorderingCards.add(sec.id);
   render();
   initCardDragDrop();
-  if (reorderingCards.has(sec.id)) initItemDragDrop(si);
+}
+
+function moveItem(si, ci, dir) {
+  const chars = currentSections()[si].chars;
+  const targetIdx = ci + dir;
+  if (targetIdx < 0 || targetIdx >= chars.length) return;
+  [chars[ci], chars[targetIdx]] = [chars[targetIdx], chars[ci]];
+  saveState(); render(); initCardDragDrop();
 }
 
 function adjustCount(si, ci, delta) {
@@ -544,54 +559,7 @@ function initCardDragDrop() {
   });
 }
 
-let dragSrcItemIdx = null;
-let dragSrcItemId = null;
 
-function initItemDragDrop(si) {
-  const sec = currentSections()[si];
-  const grid = document.getElementById(`items-${sec.id}`);
-  if (!grid) return;
-
-  grid.addEventListener('dragstart', e => {
-    const row = e.target.closest('.char-row[draggable]');
-    if (!row) return;
-    dragSrcItemId = row.dataset.itemId;
-    setTimeout(() => row.classList.add('item-dragging'), 0);
-    e.dataTransfer.effectAllowed = 'move';
-    e.stopPropagation();
-  });
-
-  grid.addEventListener('dragend', e => {
-    grid.querySelectorAll('.item-dragging').forEach(x => x.classList.remove('item-dragging'));
-    grid.querySelectorAll('.item-drag-over').forEach(x => x.classList.remove('item-drag-over'));
-    dragSrcItemId = null;
-  });
-
-  grid.addEventListener('dragover', e => {
-    e.preventDefault();
-    e.stopPropagation();
-    const row = e.target.closest('.char-row[draggable]');
-    grid.querySelectorAll('.item-drag-over').forEach(x => x.classList.remove('item-drag-over'));
-    if (row && row.dataset.itemId !== dragSrcItemId) row.classList.add('item-drag-over');
-  });
-
-  grid.addEventListener('drop', e => {
-    e.preventDefault();
-    e.stopPropagation();
-    const row = e.target.closest('.char-row[draggable]');
-    if (!row || !dragSrcItemId) return;
-    const tgtId = row.dataset.itemId;
-    if (tgtId === dragSrcItemId) return;
-    const chars = currentSections()[si].chars;
-    const srcIdx = chars.findIndex(c => c.id === dragSrcItemId);
-    const tgtIdx = chars.findIndex(c => c.id === tgtId);
-    if (srcIdx === -1 || tgtIdx === -1) return;
-    const [moved] = chars.splice(srcIdx, 1);
-    chars.splice(tgtIdx, 0, moved);
-    saveState(); render(); initCardDragDrop();
-    initItemDragDrop(si);
-  });
-}
 
 document.addEventListener('DOMContentLoaded', () => {
   ['sectionModal', 'tutorialModal'].forEach(id => {

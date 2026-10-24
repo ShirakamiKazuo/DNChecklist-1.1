@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adventure Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="wrapper">
+  <header>
+    <div class="header-top">
+      <div>
+        <h1>Adventure Tracker</h1>
+        <p class="subtitle">Track your recurring tasks and activities</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-icon" id="tutorial-btn" onclick="openTutorial()" title="How to save your config">?</button>
+        <button class="btn-secondary" onclick="exportData()">Export</button>
+        <button class="btn-secondary" onclick="document.getElementById('importFile').click()">Import</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)" />
+      </div>
+    </div>
+    <div class="tab-toggle">
+      <button class="tab-btn active" id="tab-dn" onclick="switchTab('dn')">Dragon Nest</button>
+      <button class="tab-btn" id="tab-custom" onclick="switchTab('custom')">Custom</button>
+    </div>
+  </header>
+
+  <div class="reset-banner" id="dn-banner">
+    <div class="reset-info">
+      Weekly reset: <span id="nextReset">—</span> &nbsp;·&nbsp; Daily reset: <span id="nextDaily">—</span>
+    </div>
+    <button class="btn-danger-sm" onclick="resetAll()">Reset All</button>
+  </div>
+
+  <div class="reset-banner" id="custom-banner" style="display:none;">
+    <div class="reset-info">Each activity resets on its own schedule</div>
+    <button class="btn-danger-sm" onclick="resetAll()">Reset All</button>
+  </div>
+
+  <div class="controls">
+    <button class="btn-primary" onclick="openAddSection()">+ Add Activity</button>
+  </div>
+
+  <div id="sections-container"></div>
+</div>
+
+<!-- Add Section Modal -->
+<div class="modal-overlay" id="sectionModal">
+  <div class="modal">
+    <h2>Add Activity</h2>
+    <div class="modal-field">
+      <label>Name</label>
+      <input type="text" class="input-field" id="modalSectionName" placeholder="e.g. Weekly Raid" />
+    </div>
+    <div class="modal-field">
+      <label>Type</label>
+      <select id="modalSectionType" onchange="onTypeChange()">
+        <option value="weekly">Weekly</option>
+        <option value="daily">Daily</option>
+        <option value="once">One-time</option>
+        <option value="counter">Counter (Inventory)</option>
+      </select>
+    </div>
+    <div id="custom-reset-fields" style="display:none;">
+      <div class="modal-field">
+        <label>Reset Day</label>
+        <select id="modalResetDay">
+          <option value="0">Sunday</option>
+          <option value="1">Monday</option>
+          <option value="2">Tuesday</option>
+          <option value="3">Wednesday</option>
+          <option value="4">Thursday</option>
+          <option value="5">Friday</option>
+          <option value="6">Saturday</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Reset Time</label>
+        <input type="time" class="input-field" id="modalResetTime" value="09:00" />
+      </div>
+      <div class="modal-field">
+        <label>Timezone</label>
+        <select id="modalResetTz">
+          <option value="Asia/Manila">Asia/Manila (UTC+8)</option>
+          <option value="UTC">UTC</option>
+          <option value="America/New_York">America/New_York (ET)</option>
+          <option value="America/Los_Angeles">America/Los_Angeles (PT)</option>
+          <option value="Europe/London">Europe/London (GMT/BST)</option>
+          <option value="Europe/Paris">Europe/Paris (CET)</option>
+          <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
+          <option value="Asia/Shanghai">Asia/Shanghai (CST)</option>
+          <option value="Australia/Sydney">Australia/Sydney (AEST)</option>
+        </select>
+      </div>
+    </div>
+    <div id="daily-reset-fields" style="display:none;">
+      <div class="modal-field">
+        <label>Reset Time</label>
+        <input type="time" class="input-field" id="modalDailyResetTime" value="09:00" />
+      </div>
+      <div class="modal-field">
+        <label>Timezone</label>
+        <select id="modalDailyResetTz">
+          <option value="Asia/Manila">Asia/Manila (UTC+8)</option>
+          <option value="UTC">UTC</option>
+          <option value="America/New_York">America/New_York (ET)</option>
+          <option value="America/Los_Angeles">America/Los_Angeles (PT)</option>
+          <option value="Europe/London">Europe/London (GMT/BST)</option>
+          <option value="Europe/Paris">Europe/Paris (CET)</option>
+          <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
+          <option value="Asia/Shanghai">Asia/Shanghai (CST)</option>
+          <option value="Australia/Sydney">Australia/Sydney (AEST)</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-field">
+      <label>Color</label>
+      <select id="modalSectionColor">
+        <option value="#6c8ebf">Blue</option>
+        <option value="#82b366">Green</option>
+        <option value="#b5a642">Gold</option>
+        <option value="#ae4132">Red</option>
+        <option value="#9b72cf">Purple</option>
+        <option value="#3aa8a0">Teal</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('sectionModal')">Cancel</button>
+      <button class="btn-primary" onclick="confirmAddSection()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tutorial Modal -->
+<div class="modal-overlay" id="tutorialModal">
+  <div class="modal modal-wide">
+    <h2>Saving Your Config</h2>
+    <p class="tutorial-intro">Your data lives in your browser's <code>localStorage</code>. It doesn't follow you across devices, and it gets wiped if you clear your browser data or open the tracker from a new URL (like after pushing to GitHub Pages).</p>
+
+    <div class="tutorial-step">
+      <div class="step-num">1</div>
+      <div>
+        <strong>Export before you push</strong>
+        <p>Click the <strong>Export</strong> button. It downloads a <code>tracker-config.json</code> file with all your activities and entries.</p>
+      </div>
+    </div>
+    <div class="tutorial-step">
+      <div class="step-num">2</div>
+      <div>
+        <strong>Push your code</strong>
+        <p>Push to GitHub as normal. Your tracker will be live at your GitHub Pages URL.</p>
+      </div>
+    </div>
+    <div class="tutorial-step">
+      <div class="step-num">3</div>
+      <div>
+        <strong>Import after the push</strong>
+        <p>Open the live site, click <strong>Import</strong>, and select the JSON file you downloaded. Everything comes back — activities, entries, counters, order.</p>
+      </div>
+    </div>
+
+    <div class="tutorial-note">
+      Checkboxes are not saved in the export — only your activity structure and entries. This is intentional so you always start fresh after a deploy.
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="closeModal('tutorialModal')">Got it</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -246,8 +246,8 @@ function renderSection(sec, si) {
 function renderChar(sec, si, ch, ci, isReordering) {
   return `
   <div class="char-row ${ch.done ? 'done' : ''} ${isReordering ? 'reorder-mode' : ''}"
-       ${isReordering ? `draggable="true" data-item-idx="${ci}"` : `onclick="toggleChar(${si},${ci})"`}
-       id="item-${sec.id}-${ci}">
+       ${isReordering ? `draggable="true" data-item-id="${ch.id}"` : `onclick="toggleChar(${si},${ci})"`}
+       id="item-${sec.id}-${ch.id}">
     <span class="item-drag-handle" onmousedown="event.stopPropagation()">⠿⠿</span>
     <div class="char-check"><span class="char-check-icon">✓</span></div>
     <span class="char-name">${esc(ch.name)}</span>
@@ -545,7 +545,7 @@ function initCardDragDrop() {
 }
 
 let dragSrcItemIdx = null;
-let dragSrcItemSi = null;
+let dragSrcItemId = null;
 
 function initItemDragDrop(si) {
   const sec = currentSections()[si];
@@ -555,8 +555,7 @@ function initItemDragDrop(si) {
   grid.addEventListener('dragstart', e => {
     const row = e.target.closest('.char-row[draggable]');
     if (!row) return;
-    dragSrcItemIdx = parseInt(row.dataset.itemIdx);
-    dragSrcItemSi = si;
+    dragSrcItemId = row.dataset.itemId;
     setTimeout(() => row.classList.add('item-dragging'), 0);
     e.dataTransfer.effectAllowed = 'move';
     e.stopPropagation();
@@ -565,8 +564,7 @@ function initItemDragDrop(si) {
   grid.addEventListener('dragend', e => {
     grid.querySelectorAll('.item-dragging').forEach(x => x.classList.remove('item-dragging'));
     grid.querySelectorAll('.item-drag-over').forEach(x => x.classList.remove('item-drag-over'));
-    dragSrcItemIdx = null;
-    dragSrcItemSi = null;
+    dragSrcItemId = null;
   });
 
   grid.addEventListener('dragover', e => {
@@ -574,18 +572,21 @@ function initItemDragDrop(si) {
     e.stopPropagation();
     const row = e.target.closest('.char-row[draggable]');
     grid.querySelectorAll('.item-drag-over').forEach(x => x.classList.remove('item-drag-over'));
-    if (row && parseInt(row.dataset.itemIdx) !== dragSrcItemIdx) row.classList.add('item-drag-over');
+    if (row && row.dataset.itemId !== dragSrcItemId) row.classList.add('item-drag-over');
   });
 
   grid.addEventListener('drop', e => {
     e.preventDefault();
     e.stopPropagation();
     const row = e.target.closest('.char-row[draggable]');
-    if (!row || dragSrcItemIdx === null) return;
-    const tgtIdx = parseInt(row.dataset.itemIdx);
-    if (tgtIdx === dragSrcItemIdx) return;
+    if (!row || !dragSrcItemId) return;
+    const tgtId = row.dataset.itemId;
+    if (tgtId === dragSrcItemId) return;
     const chars = currentSections()[si].chars;
-    const [moved] = chars.splice(dragSrcItemIdx, 1);
+    const srcIdx = chars.findIndex(c => c.id === dragSrcItemId);
+    const tgtIdx = chars.findIndex(c => c.id === tgtId);
+    if (srcIdx === -1 || tgtIdx === -1) return;
+    const [moved] = chars.splice(srcIdx, 1);
     chars.splice(tgtIdx, 0, moved);
     saveState(); render(); initCardDragDrop();
     initItemDragDrop(si);

@@ -138,33 +138,33 @@
 <!-- Tutorial Modal -->
 <div class="modal-overlay" id="tutorialModal">
   <div class="modal modal-wide">
-    <h2>Saving Your Config</h2>
-    <p class="tutorial-intro">Your data lives in your browser's <code>localStorage</code>. It doesn't follow you across devices, and it gets wiped if you clear your browser data or open the tracker from a new URL (like after pushing to GitHub Pages).</p>
+    <h2>How to Save Your Setup</h2>
+    <p class="tutorial-intro">Your activities and entries are saved in your browser. They stay put as long as you use the same browser — but they won't carry over if you switch browsers, clear your browser data, or open the tracker from a different URL.</p>
 
     <div class="tutorial-step">
       <div class="step-num">1</div>
       <div>
-        <strong>Export before you push</strong>
-        <p>Click the <strong>Export</strong> button. It downloads a <code>tracker-config.json</code> file with all your activities and entries.</p>
+        <strong>Export your config</strong>
+        <p>Click <strong>Export</strong> at the top. This downloads a <code>tracker-config.json</code> file containing all your activities and entries. Keep this file somewhere safe — it's your backup.</p>
       </div>
     </div>
     <div class="tutorial-step">
       <div class="step-num">2</div>
       <div>
-        <strong>Push your code</strong>
-        <p>Push to GitHub as normal. Your tracker will be live at your GitHub Pages URL.</p>
+        <strong>Import it back anytime</strong>
+        <p>If your data ever disappears — new device, new browser, cleared cache — click <strong>Import</strong> and select your saved JSON file. Everything comes back exactly as you left it.</p>
       </div>
     </div>
     <div class="tutorial-step">
       <div class="step-num">3</div>
       <div>
-        <strong>Import after the push</strong>
-        <p>Open the live site, click <strong>Import</strong>, and select the JSON file you downloaded. Everything comes back — activities, entries, counters, order.</p>
+        <strong>Re-export whenever you make changes</strong>
+        <p>Added new characters or activities? Export again to keep your backup up to date. It only takes a second.</p>
       </div>
     </div>
 
     <div class="tutorial-note">
-      Checkboxes are not saved in the export — only your activity structure and entries. This is intentional so you always start fresh after a deploy.
+      The export saves your activity structure and entries, but not your current checkbox state — so after importing, you'll start with a clean slate for the week.
     </div>
 
     <div class="modal-actions">
